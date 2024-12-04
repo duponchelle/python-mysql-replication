@@ -125,6 +125,43 @@ class GtidEvent(BinLogEvent):
             self.last_committed = struct.unpack("<Q", self.packet.read(8))[0]
             self.sequence_number = struct.unpack("<Q", self.packet.read(8))[0]
 
+        format_string = "<Q"
+        read_immediate_commit_timestamp = self.packet.read(7)
+        self.immediate_commit_timestamp = read_immediate_commit_timestamp.ljust(
+            struct.calcsize(format_string), b"\x00"
+        )
+        self.immediate_commit_timestamp = struct.unpack(
+            format_string, self.immediate_commit_timestamp
+        )[0]
+        self.immediate_commit_timestamp = self.immediate_commit_timestamp & (
+            (1 << (8 * struct.calcsize(format_string))) - 1
+        )
+        self.immediate_commit_timestamp = struct.pack(
+            format_string, self.immediate_commit_timestamp
+        )
+
+        read_original_commit_timestamp = self.packet.read(7)
+        self.original_commit_timestamp = read_original_commit_timestamp.ljust(
+            struct.calcsize(format_string), b"\x00"
+        )
+        self.original_commit_timestamp = struct.unpack(
+            format_string, self.original_commit_timestamp
+        )[0]
+        self.original_commit_timestamp = self.original_commit_timestamp & (
+            (1 << (8 * struct.calcsize(format_string))) - 1
+        )
+        self.original_commit_timestamp = struct.pack(
+            format_string, self.original_commit_timestamp
+        )
+
+        # todo(hun): We should implement the properties below,
+        #            but due to the lack of documentation on the variable-length property,
+        #            we've left it as future work.
+        # - transaction_length, unknown Variable Length
+        # - immediate_server_version, 4 bytes
+        # - original_server_version, 4 bytes
+        # - Commit group ticket, 8 bytes, This property is only introduced in the CPP implementation.
+
     @property
     def gtid(self):
         """

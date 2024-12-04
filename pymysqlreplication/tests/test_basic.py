@@ -15,7 +15,6 @@ from pymysql.protocol import MysqlPacket
 from unittest.mock import patch
 import pytest
 
-
 __all__ = [
     "TestBasicBinLogStreamReader",
     "TestMultipleRowBinLogStreamReader",
@@ -1596,6 +1595,42 @@ class TestRowsQueryLogEvents(base.PyMySQLReplicationTestCase):
         event = self.stream.fetchone()
         self.assertIsInstance(event, RowsQueryLogEvent)
         self.assertEqual(event.query, long_query)
+
+
+class TestGtidEvent(base.PyMySQLReplicationTestCase):
+    def setUp(self):
+        super(TestGtidEvent, self).setUp()
+        self.execute("SET SESSION binlog_rows_query_log_events=1")
+
+    def tearDown(self):
+        self.execute("SET SESSION binlog_rows_query_log_events=0")
+        super(TestGtidEvent, self).tearDown()
+
+    def test_gtid_event(self):
+        self.stream.close()
+        self.stream = BinLogStreamReader(
+            self.database,
+            server_id=1024,
+            only_events=[GtidEvent, FormatDescriptionEvent],
+        )
+        if not self.isMySQL801AndMore():
+            self.skipTest("Mysql version is under 8.0.1")
+        self.execute(
+            "CREATE TABLE IF NOT EXISTS test (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(255))"
+        )
+        format_description_event = self.stream.fetchone()
+        gtid_event = self.stream.fetchone()
+        self.assertIsInstance(format_description_event, FormatDescriptionEvent)
+        self.assertIsInstance(gtid_event, GtidEvent)
+        self.assertIsInstance(gtid_event.event_type, int)
+        self.assertIsInstance(gtid_event.sid, bytes)
+        self.assertIsInstance(gtid_event.gno, int)
+        self.assertIsInstance(gtid_event.lt_type, int)
+        self.assertIsInstance(gtid_event.last_committed, int)
+        self.assertIsInstance(gtid_event.sequence_number, int)
+        self.assertEqual(gtid_event.sequence_number, 1)
+        self.assertIsInstance(gtid_event.immediate_commit_timestamp, bytes)
+        self.assertIsInstance(gtid_event.original_commit_timestamp, bytes)
 
 
 class TestLatin1(base.PyMySQLReplicationTestCase):

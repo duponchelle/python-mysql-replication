@@ -74,6 +74,13 @@ class PyMySQLReplicationTestCase(base):
         version = float(self.getMySQLVersion().rsplit(".", 1)[0])
         return version == 5.7
 
+    def isMySQL801AndMore(self):
+        version = float(self.getMySQLVersion().rsplit(".", 1)[0])
+        version_detail = int(self.getMySQLVersion().rsplit(".", 1)[1])
+        if version > 8.0:
+            return True
+        return version == 8.0 and version_detail >= 10
+
     def isMySQL80AndMore(self):
         version = float(self.getMySQLVersion().rsplit(".", 1)[0])
         return version >= 8.0
