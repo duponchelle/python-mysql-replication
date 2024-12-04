@@ -383,9 +383,10 @@ class BinLogStreamReader(object):
         # Mariadb, when it tries to replace GTID events with dummy ones. Given that this library understands GTID
         # events, setting the capability to 4 circumvents this error.
         # If the DB is mysql, this won't have any effect so no need to run this in a condition
-        cur = self._stream_connection.cursor()
-        cur.execute("SET @mariadb_slave_capability=4")
-        cur.close()
+        if self.is_mariadb:
+            cur = self._stream_connection.cursor()
+            cur.execute("SET @mariadb_slave_capability=4")
+            cur.close()
 
         self._register_slave()
 
