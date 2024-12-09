@@ -89,11 +89,11 @@ class ReportSlave(object):
             self.hostname = value
 
     def __repr__(self):
-        return "<ReportSlave hostname=%s username=%s password=%s port=%d>" % (
-            self.hostname,
-            self.username,
-            self.password,
-            self.port,
+        return (
+            f"<ReportSlave hostname={self.hostname} "
+            f"username={self.username} "
+            f"password={self.password} "
+            f"port={self.port}>"
         )
 
     def encoded(self, server_id, master_id=0):
@@ -376,7 +376,7 @@ class BinLogStreamReader(object):
             # master_heartbeat_period is nanoseconds
             heartbeat = int(heartbeat * 1000000000)
             cur = self._stream_connection.cursor()
-            cur.execute("SET @master_heartbeat_period= %d" % heartbeat)
+            cur.execute_with_args("SET @master_heartbeat_period= %d", (heartbeat,))
             cur.close()
 
         # When replicating from Mariadb 10.6.12 using binlog coordinates, a slave capability < 4 triggers a bug in

@@ -505,7 +505,7 @@ class QueryEvent(BinLogEvent):
 
     def _dump(self):
         super()._dump()
-        print(f"Schema: {self.schema}" % (self.schema))
+        print(f"Schema: {self.schema}")
         print(f"Execution time: {self.execution_time}")
         print(f"Query: {self.query}")
 

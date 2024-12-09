@@ -15,7 +15,6 @@ from pymysql.protocol import MysqlPacket
 from unittest.mock import patch
 import pytest
 
-
 __all__ = [
     "TestBasicBinLogStreamReader",
     "TestMultipleRowBinLogStreamReader",
